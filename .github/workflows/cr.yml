@@ -21,3 +21,4 @@ jobs:
           github_pr_id: ${{ github.event.number }}
           mode: files # files or patch
           language: ko # optional, default is 'en'
+          custom_prompt: "Give a rating from 1 to 10 for this code:"
