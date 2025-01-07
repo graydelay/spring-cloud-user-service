@@ -9,11 +9,15 @@ on:
     types: [opened, synchronize]
 
 jobs:
-  test:
+  code_review_job:
     runs-on: ubuntu-latest
+    name: ChatGPT Code Review
     steps:
-      - uses: anc95/ChatGPT-CodeReview@main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          LANGUAGE: Korean
+      - name: GenAI Code Review
+        uses: cirolini/genai-code-review@v2
+        with:
+          openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_pr_id: ${{ github.event.number }}
+          mode: files # files or patch
+          language: ko # optional, default is 'en'
