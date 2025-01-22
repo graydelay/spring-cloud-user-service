@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Form</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}"/>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">User Service</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/users}">Users</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h2 th:text="${user.userId} ? 'Edit User' : 'Create New User'"></h2>
+        
+        <form th:action="${user.userId} ? @{/users/{id}(id=${user.userId})} : @{/users}"
+              th:method="${user.userId} ? 'put' : 'post'"
+              th:object="${user}"
+              class="needs-validation"
+              novalidate>
+            
+            <div class="mb-3">
+                <label for="name" class="form-label">Name</label>
+                <input type="text" class="form-control" id="name" th:field="*{name}" required>
+                <div class="invalid-feedback">Please enter a name.</div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" th:field="*{email}" required>
+                <div class="invalid-feedback">Please enter a valid email.</div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="pwd" class="form-label">Password</label>
+                <input type="password" class="form-control" id="pwd" th:field="*{pwd}"
+                       th:required="${!user.userId}">
+                <div class="invalid-feedback">Please enter a password.</div>
+                <small class="text-muted" th:if="${user.userId}">Leave blank to keep current password.</small>
+            </div>
+            
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a th:href="@{/users}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+    <script th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
+    <script>
+        // Form validation
+        (function () {
+            'use strict'
+            var forms = document.querySelectorAll('.needs-validation')
+            Array.prototype.slice.call(forms).forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })()
+    </script>
+</body>
+</html>

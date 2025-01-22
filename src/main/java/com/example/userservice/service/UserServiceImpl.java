@@ -14,6 +14,8 @@ import org.springframework.core.env.Environment;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -103,8 +105,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Iterable<UserEntity> getUserByAll() {
-        return userRepository.findAll();
+    public Page<UserEntity> getUserByAll(Pageable pageable) {
+        return userRepository.findAll(pageable);
     }
 
     @Override
@@ -115,5 +117,32 @@ public class UserServiceImpl implements UserService {
         }
 
         return new ModelMapper().map(userEntity, UserDto.class);
+    }
+
+    @Override
+    public UserDto updateUser(UserDto userDto) {
+        UserEntity userEntity = userRepository.findByUserId(userDto.getUserId());
+        if (userEntity == null) {
+            throw new UsernameNotFoundException("User not found");
+        }
+
+        // Update fields
+        userEntity.setName(userDto.getName());
+        userEntity.setEmail(userDto.getEmail());
+        if (userDto.getPwd() != null && !userDto.getPwd().isEmpty()) {
+            userEntity.setEncryptedPwd(encoder.encode(userDto.getPwd()));
+        }
+
+        userRepository.save(userEntity);
+        return new ModelMapper().map(userEntity, UserDto.class);
+    }
+
+    @Override
+    public void deleteUser(String userId) {
+        UserEntity userEntity = userRepository.findByUserId(userId);
+        if (userEntity == null) {
+            throw new UsernameNotFoundException("User not found");
+        }
+        userRepository.delete(userEntity);
     }
 }

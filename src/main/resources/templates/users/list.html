@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}"/>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">User Service</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" th:href="@{/users}">Users</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>User Management</h2>
+            <a th:href="@{/users/new}" class="btn btn-primary">Create New User</a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="user : ${users.content}">
+                        <td th:text="${user.userId}"></td>
+                        <td th:text="${user.name}"></td>
+                        <td th:text="${user.email}"></td>
+                        <td>
+                            <a th:href="@{/users/{id}/edit(id=${user.userId})}" class="btn btn-sm btn-warning">Edit</a>
+                            <button class="btn btn-sm btn-danger" 
+                                    th:onclick="'deleteUser(\'' + ${user.userId} + '\')'">Delete</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <nav th:if="${users.totalPages > 0}">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" th:classappend="${users.pageNo == 0} ? 'disabled'">
+                    <a class="page-link" th:href="@{/users(page=${users.pageNo - 1})}">Previous</a>
+                </li>
+                <li class="page-item" th:each="pageNum : ${#numbers.sequence(0, users.totalPages - 1)}"
+                    th:classappend="${pageNum == users.pageNo} ? 'active'">
+                    <a class="page-link" th:href="@{/users(page=${pageNum})}" th:text="${pageNum + 1}"></a>
+                </li>
+                <li class="page-item" th:classappend="${users.pageNo == users.totalPages - 1} ? 'disabled'">
+                    <a class="page-link" th:href="@{/users(page=${users.pageNo + 1})}">Next</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <script th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
+    <script>
+        function deleteUser(userId) {
+            if (confirm('Are you sure you want to delete this user?')) {
+                fetch(`/users/${userId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }).then(response => {
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        alert('Failed to delete user');
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>
