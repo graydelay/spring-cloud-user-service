@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>User List - Spring Cloud User Service</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">Spring Cloud User Service</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/users/list">Users</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>User List</h2>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createUserModal">
+                Create User
+            </button>
+        </div>
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="user : ${users}">
+                    <td th:text="${user.userId}">ID</td>
+                    <td th:text="${user.name}">Name</td>
+                    <td th:text="${user.email}">Email</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning edit-user" 
+                                th:data-id="${user.userId}"
+                                th:data-name="${user.name}"
+                                th:data-email="${user.email}"
+                                data-bs-toggle="modal" 
+                                data-bs-target="#editUserModal">Edit</button>
+                        <button class="btn btn-sm btn-danger delete-user" 
+                                th:data-id="${user.userId}"
+                                data-bs-toggle="modal" 
+                                data-bs-target="#deleteUserModal">Delete</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <nav>
+            <ul class="pagination justify-content-center">
+                <li class="page-item" th:classappend="${users.first ? 'disabled' : ''}">
+                    <a class="page-link" th:href="@{/users/list(page=${users.number - 1})}">Previous</a>
+                </li>
+                <li class="page-item" th:each="i : ${#numbers.sequence(0, users.totalPages - 1)}"
+                    th:classappend="${users.number == i ? 'active' : ''}">
+                    <a class="page-link" th:href="@{/users/list(page=${i})}" th:text="${i + 1}">1</a>
+                </li>
+                <li class="page-item" th:classappend="${users.last ? 'disabled' : ''}">
+                    <a class="page-link" th:href="@{/users/list(page=${users.number + 1})}">Next</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Create User Modal -->
+    <div class="modal fade" id="createUserModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createUserForm">
+                        <div class="mb-3">
+                            <label for="createName" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="createName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="createEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="createEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="createPassword" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="createPassword" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="createUserBtn">Create</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div class="modal fade" id="editUserModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editUserForm">
+                        <input type="hidden" id="editUserId">
+                        <div class="mb-3">
+                            <label for="editName" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="editName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="editEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editPassword" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="editPassword" placeholder="Leave blank to keep current password">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="updateUserBtn">Update</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete User Modal -->
+    <div class="modal fade" id="deleteUserModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this user?</p>
+                    <input type="hidden" id="deleteUserId">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Create User
+            document.getElementById('createUserBtn').addEventListener('click', function() {
+                const name = document.getElementById('createName').value;
+                const email = document.getElementById('createEmail').value;
+                const password = document.getElementById('createPassword').value;
+
+                fetch('/users', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        email: email,
+                        pwd: password
+                    })
+                }).then(response => {
+                    if (response.ok) {
+                        window.location.reload();
+                    }
+                });
+            });
+
+            // Edit User
+            document.querySelectorAll('.edit-user').forEach(button => {
+                button.addEventListener('click', function() {
+                    const userId = this.getAttribute('data-id');
+                    const name = this.getAttribute('data-name');
+                    const email = this.getAttribute('data-email');
+
+                    document.getElementById('editUserId').value = userId;
+                    document.getElementById('editName').value = name;
+                    document.getElementById('editEmail').value = email;
+                });
+            });
+
+            // Update User
+            document.getElementById('updateUserBtn').addEventListener('click', function() {
+                const userId = document.getElementById('editUserId').value;
+                const name = document.getElementById('editName').value;
+                const email = document.getElementById('editEmail').value;
+                const password = document.getElementById('editPassword').value;
+
+                const data = {
+                    name: name,
+                    email: email
+                };
+
+                if (password) {
+                    data.pwd = password;
+                }
+
+                fetch(`/users/${userId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                }).then(response => {
+                    if (response.ok) {
+                        window.location.reload();
+                    }
+                });
+            });
+
+            // Delete User
+            document.querySelectorAll('.delete-user').forEach(button => {
+                button.addEventListener('click', function() {
+                    const userId = this.getAttribute('data-id');
+                    document.getElementById('deleteUserId').value = userId;
+                });
+            });
+
+            // Confirm Delete
+            document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+                const userId = document.getElementById('deleteUserId').value;
+
+                fetch(`/users/${userId}`, {
+                    method: 'DELETE'
+                }).then(response => {
+                    if (response.ok) {
+                        window.location.reload();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html> 
